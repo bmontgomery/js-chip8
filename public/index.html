@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<head>
+  <title>Application Bootstrap</title>
+
+  <link rel="stylesheet" href="css/app.css" />
+
+  <script type="text/javascript" src="lib/jquery-1.10.2.min.js"></script>
+  <script type="text/javascript" src="javascript/app.js"></script>
+  <script type="text/javascript">
+  	$(function(){
+  		var canvas = document.getElementById('screen');
+  		var context = canvas.getContext('2d');
+  		var xOffset = 0;
+  		var yOffset = 0;
+  		var xScale = canvas.width / 64;
+  		var yScale = canvas.height / 32;
+
+  		var drawScreen = function drawScreen(data) {
+  			var rowIndex;
+  			var dataRow;
+  			var colIndex;
+  			var pixelData;
+  			var xPos;
+  			var yPos;
+
+  			// there will be 64 possible values for x
+  			for(rowIndex = 0; rowIndex < 64; rowIndex++){
+  				dataRow = data[rowIndex];
+
+  				// there will be 32 possible values for y
+  				for(colIndex = 0; colIndex < 32; colIndex++){
+  					// this will be 1 or 0, representing one pixel
+  					pixelData = dataRow[colIndex];
+
+  					// draw the pixel to the screen. white for 1 (trueish); otherwise black.
+  					context.fillStyle = pixelData ? '#FFFFFF' : '#000000';
+
+  					xPos = xOffset + rowIndex * xScale;
+  					yPos = yOffset + colIndex * yScale;
+  					context.fillRect(xPos, yPos, xPos + xScale, yPos + yScale);
+  				}
+  			}
+  		};
+
+  		var chip8 = new Chip8(drawScreen);
+
+  		// program is a series of bytes
+  		// this program simply loops through the values 0 to F and displays the
+  		// corresponding characters on the screen. it also ensures the characters
+  		// are actually displayed and don't run off the right hand bound of the
+  		// screen.
+  		var program = [
+  			0x6000, // 200: set V0 (the character to display)
+  			0x6101, //      set x (V1) to 1 (to store x coord of sprite position)
+  			0x6201, //      set y (V2) to 1 (to store y coord of sprite position)
+  			0x6439, //      set max_x (V4) to 57
+     
+  			0x4010, //      if V0 is not equal to 10, skip next instruction
+  			0x1FFF, //      jump out of program
+     
+  			0x2210, //      call subroutine
+  			0x1206, //      jump to "if" check
+
+  			// start subroutine
+  			0xF029, // 210: set I to the start address of the character in V0
+  			0xD125, //      draw sprite for 5 bytes at coords V1, V2
+     
+  			0x7001, //      increment V0 (character to display) by 1
+  			0x7105, //      increment V1 (x) by 5
+
+  			// if x > max_x, increment y by 6, reset x to 0
+  			0x8310, //      copy value of x (V1) into x2 (V3)
+  			0x8345, //      subtract max_x (V4) from x2 (V3)
+  			0x3F00, //      skip next instruction if result was positive (VF = 0)
+  			0x1222, //      jump to is negative case
+  			0x1226, // 220: jump to return from subroutine
+
+  			// is negative case
+  			0x6101, //      set x (V1) to 0
+  			0x7206, //      increment y (V2) by 6
+
+  			0x00EE  //      return from subroutine
+  		];
+
+  		chip8.loadProgram(program);
+  		
+  		// start chip8
+  		chip8.start();
+  	});
+  </script>
+</head>
+<body>
+  <canvas id="screen" width="1024" height="512"></canvas>
+</body>
