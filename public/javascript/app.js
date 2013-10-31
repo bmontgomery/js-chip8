@@ -2,13 +2,12 @@ var Chip8 = (function(){
 	// bind utility method
 	var _bind = function(fn, thisArg) {
 		return function() {
-			fn.call(thisArg, arguments);
+			fn.apply(thisArg, arguments);
 		};
 	};
 
-  function Chip8(drawScreenCallback) {
+  function Chip8() {
     this.reset();
-    this.drawScreenCallback = drawScreenCallback;
   }
   
   Chip8.prototype.reset = function reset() {
@@ -403,13 +402,10 @@ var Chip8 = (function(){
 
   Chip8.prototype.start = function() {
   	if (this.programCounter <= 0xFFF) {
-  		this.tick();
+    	this.tick();
 
-  		// use setTimeout method to get clock speed to be 1.76 MHz
-  		setTimeout(this.start, 1 / 1.76e6);
-
-  		// use request animation frame to do the next frame also
-  		//window.requestAnimationFrame(this.start);
+    	// use setTimeout method to get clock speed to be 1.76 MHz
+    	setTimeout(this.start, 1 / 1.76e6);
   	}
   };
 
@@ -423,11 +419,6 @@ var Chip8 = (function(){
   	if (!this.isAwaitingInput) {
     	this.processNextOpcode();
     }
-
-    // draw graphics
-    if (this.drawScreenCallback) {
-	    this.drawScreenCallback(this.graphicsData);
-	  }
   };
 
   Chip8.prototype.keypress = function(key) {

@@ -14,8 +14,12 @@
   		var yOffset = 0;
   		var xScale = canvas.width / 64;
   		var yScale = canvas.height / 32;
+      var drawScreen;
 
-  		var drawScreen = function drawScreen(data) {
+      var chip8 = new Chip8();
+
+  		drawScreen = function drawScreen() {
+        var data = chip8.graphicsData;
   			var rowIndex;
   			var dataRow;
   			var colIndex;
@@ -40,9 +44,12 @@
   					context.fillRect(xPos, yPos, xPos + xScale, yPos + yScale);
   				}
   			}
+
+        window.requestAnimationFrame(drawScreen);
   		};
 
-  		var chip8 = new Chip8(drawScreen);
+      // start drawing the screen
+      drawScreen();
 
   		// program is a series of bytes
   		// this program simply loops through the values 0 to F and displays the
@@ -59,7 +66,7 @@
   			0x1FFF, //      jump out of program
      
   			0x2210, //      call subroutine
-  			0x1206, //      jump to "if" check
+  			0x1208, //      jump to "if" check
 
   			// start subroutine
   			0xF029, // 210: set I to the start address of the character in V0
